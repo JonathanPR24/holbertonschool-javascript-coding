@@ -1,34 +1,16 @@
-const { expect } = require('chai');
 const http = require('http');
-const app = require('./4-http');
 
-describe('HTTP Server', () => {
-  let server;
+const hostname = '127.0.0.1';
+const port = 1245;
 
-  before((done) => {
-    server = http.createServer(app);
-    server.listen(1245, () => {
-      done();
-    });
-  });
-
-  after(() => {
-    server.close();
-  });
-
-  it('should respond with "Hello Holberton School!" for /', (done) => {
-    http.get('http://localhost:1245', (response) => {
-      let data = '';
-
-      response.on('data', (chunk) => {
-        data += chunk;
-      });
-
-      response.on('end', () => {
-        expect(response.statusCode).to.equal(200);
-        expect(data).to.equal('Hello Holberton School!\n');
-        done();
-      });
-    });
-  });
+const app = http.createServer((req, res) => {
+  res.statusCode = 200;
+  res.setHeader('Content-Type', 'text/plain');
+  res.end('Hello Holberton School!');
 });
+
+app.listen(port, hostname, () => {
+  console.log(`Server running at http://${hostname}:${port}/`);
+});
+
+module.exports = app;

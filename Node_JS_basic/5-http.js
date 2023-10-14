@@ -33,13 +33,13 @@ app.get('/students', async (req, res) => {
     let response = 'This is the list of our students\n';
     response += `Number of students: ${totalStudents}\n`;
 
-    for (const field in fieldCounts) {
-      if (fieldCounts.hasOwnProperty(field)) {
-        const count = fieldCounts[field].length;
-        const list = fieldCounts[field].join(', ');
-        response += `Number of students in ${field}: ${count}. List: ${list}\n`;
-      }
-    }
+	  for (const field in fieldCounts) {
+		  if (Object.prototype.hasOwnProperty.call(fieldCounts, field)) {
+			  const count = fieldCounts[field].length;
+			  const list = fieldCounts[field].join(', ');
+			  response += `Number of students in ${field}: ${count}. List: ${list}\n`;
+		  }
+	  }
 
     res.send(response);
   } catch (error) {

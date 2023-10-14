@@ -1,67 +1,55 @@
-const http = require('http');
+const express = require('express');
 const fs = require('fs').promises;
-const url = require('url');
 
-const app = http.createServer((req, res) => {
-  res.statusCode = 200;
-  res.setHeader('Content-Type', 'text/plain');
+const app = express();
+const port = 1245;
 
-  const parsedUrl = url.parse(req.url, true);
-  const path = parsedUrl.pathname;
+app.get('/', (req, res) => {
+  res.send('Hello Holberton School!');
+});
 
-  if (path === '/') {
-    res.end('Hello Holberton School!');
-  } else if (path === '/students') {
-    // Get the database file name from command line arguments
-    const dbName = process.argv[2];
+app.get('/students', async (req, res) => {
+  try {
+    const databaseFilename = process.argv[2];
+    const fileContents = await fs.readFile(databaseFilename, 'utf8');
+    const lines = fileContents.split('\n').filter((line) => line.trim() !== '');
+    const fieldCounts = {};
 
-    if (!dbName) {
-      res.end('Database file not provided');
-      return;
+    for (const line of lines) {
+      const data = line.split(',');
+
+      if (data.length === 4) {
+        const field = data[3].trim();
+
+        if (fieldCounts[field]) {
+          fieldCounts[field].push(data[0].trim());
+        } else {
+          fieldCounts[field] = [data[0].trim()];
+        }
+      }
     }
 
-    // Read the database asynchronously
-    fs.readFile(dbName, 'utf8')
-      .then((fileContents) => {
-        const lines = fileContents.split('\n').filter((line) => line.trim() !== '');
-        const fieldCounts = {};
+    const totalStudents = lines.length - 1; // Subtract 1 to exclude the header
+    let response = 'This is the list of our students\n';
+    response += `Number of students: ${totalStudents}\n`;
 
-        for (const line of lines) {
-          const data = line.split(',');
+    for (const field in fieldCounts) {
+      if (fieldCounts.hasOwnProperty(field)) {
+        const count = fieldCounts[field].length;
+        const list = fieldCounts[field].join(', ');
+        response += `Number of students in ${field}: ${count}. List: ${list}\n`;
+      }
+    }
 
-          if (data.length === 4) {
-            const field = data[3].trim();
-
-            if (fieldCounts[field]) {
-              fieldCounts[field].push(data[0].trim());
-            } else {
-              fieldCounts[field] = [data[0].trim()];
-            }
-          }
-        }
-
-        const totalStudents = lines.length - 1; // Subtract 1 to exclude the header
-        res.end('This is the list of our students\n');
-        res.write(`Number of students: ${totalStudents}\n`);
-
-        for (const field in fieldCounts) {
-          if (fieldCounts.hasOwnProperty(field)) {
-            const count = fieldCounts[field].length;
-            const list = fieldCounts[field].join(', ');
-            res.write(`Number of students in ${field}: ${count}. List: ${list}\n`);
-          }
-        }
-
-        res.end();
-      })
-      .catch(() => {
-        res.end('Cannot load the database');
-      });
-  } else {
-    res.end('Not found');
+    res.send(response);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('This is the list of our students\nCannot load the database');
   }
 });
 
-app.listen(1245);
+app.listen(port, () => {
+  console.log(`Server running at http://localhost:${port}/`);
+});
 
 module.exports = app;

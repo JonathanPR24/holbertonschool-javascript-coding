@@ -18,7 +18,7 @@ function countStudents(path) {
         const field = data[3].trim();
 
         // Count the students in each field
-        if (fieldCounts.hasOwnProperty(field)) {
+        if (Object.prototype.hasOwnProperty.call(fieldCounts, field)) {
           fieldCounts[field].push(data[0].trim());
         } else {
           fieldCounts[field] = [data[0].trim()];
@@ -32,7 +32,7 @@ function countStudents(path) {
 
     // Log the number of students in each field and the list of first names
     for (const field in fieldCounts) {
-      if (fieldCounts.hasOwnProperty(field)) {
+      if (Object.prototype.hasOwnProperty.call(fieldCounts, field)) {
         const count = fieldCounts[field].length;
         const list = fieldCounts[field].join(', ');
         console.log(`Number of students in ${field}: ${count}. List: ${list}`);

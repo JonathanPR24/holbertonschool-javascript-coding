@@ -1,30 +1,30 @@
-/* eslint-disable */
-const express = require('express');
+const chai = require('chai');
+const chaiHttp = require('chai-http');
+const app = require('./7-http_express'); // Import your Express server
 
-const args = process.argv.slice(2);
-const countStudents = require('./3-read_file_async');
+const { expect } = chai;
 
-const DATABASE = args[0];
+chai.use(chaiHttp);
 
-const app = express();
-const port = 1245;
+describe('HTTP Express Server', () => {
+  it('should return "Hello Holberton School!" for the root path', (done) => {
+    chai.request(app)
+      .get('/')
+      .end((err, res) => {
+        expect(res).to.have.status(200);
+        expect(res.text).to.equal('Hello Holberton School!');
+        done();
+      });
+  });
 
-app.get('/', (req, res) => {
-  res.send('Hello Holberton School!');
+  it('should return the list of students for the /students endpoint', (done) => {
+    chai.request(app)
+      .get('/students')
+      .end((err, res) => {
+        expect(res).to.have.status(200);
+        // You can add more specific assertions here
+        done();
+      });
+  });
 });
 
-app.get('/students', async (req, res) => {
-  const msg = 'This is the list of our students\n';
-  try {
-    const students = await countStudents(DATABASE);
-    res.send(`${msg}${students.join('\n')}`);
-  } catch (error) {
-    res.send(`${msg}${error.message}`);
-  }
-});
-
-app.listen(port, () => {
-  //   console.log(`Example app listening at http://localhost:${port}`);
-});
-
-module.exports = app;

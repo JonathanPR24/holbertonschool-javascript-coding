@@ -1,55 +1,37 @@
-const express = require('express');
-const fs = require('fs').promises;
+/* eslint-disable */
+const http = require('http');
 
-const app = express();
+const args = process.argv.slice(2);
+const countStudents = require('./3-read_file_async');
+
+const DATABASE = args[0];
+
+const hostname = '127.0.0.1';
 const port = 1245;
 
-app.get('/', (req, res) => {
-  res.send('Hello Holberton School!');
-});
+const app = http.createServer(async (req, res) => {
+  res.statusCode = 200;
+  res.setHeader('Content-Type', 'text/plain');
 
-app.get('/students', async (req, res) => {
-  try {
-    const databaseFilename = process.argv[2];
-    const fileContents = await fs.readFile(databaseFilename, 'utf8');
-    const lines = fileContents.split('\n').filter((line) => line.trim() !== '');
-    const fieldCounts = {};
+  const { url } = req;
 
-    for (const line of lines) {
-      const data = line.split(',');
-
-      if (data.length === 4) {
-        const field = data[3].trim();
-
-        if (Object.prototype.hasOwnProperty.call(fieldCounts, field)) {
-          fieldCounts[field].push(data[0].trim());
-        } else {
-          fieldCounts[field] = [data[0].trim()];
-        }
-      }
+  if (url === '/') {
+    res.write('Hello Holberton School!');
+  } else if (url === '/students') {
+    res.write('This is the list of our students\n');
+    try {
+      const students = await countStudents(DATABASE);
+      res.end(`${students.join('\n')}`);
+    } catch (error) {
+      res.end(error.message);
     }
-
-    const totalStudents = lines.length - 1;
-    let response = 'This is the list of our students\n';
-    response += `Number of students: ${totalStudents}\n`;
-
-    for (const field in fieldCounts) {
-      if (Object.prototype.hasOwnProperty.call(fieldCounts, field)) {
-        const count = fieldCounts[field].length;
-        const list = fieldCounts[field].join(', ');
-        response += `Number of students in ${field}: ${count}. List: ${list}\n`;
-      }
-    }
-
-    res.send(response);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('This is the list of our students\nCannot load the database');
   }
+  res.statusCode = 404;
+  res.end();
 });
 
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}/`);
+app.listen(port, hostname, () => {
+  //   console.log(`Server running at http://${hostname}:${port}/`);
 });
 
 module.exports = app;

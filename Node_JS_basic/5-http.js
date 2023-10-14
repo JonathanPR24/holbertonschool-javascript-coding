@@ -29,7 +29,7 @@ app.get('/students', async (req, res) => {
       }
     }
 
-    const totalStudents = lines.length - 1; // Subtract 1 to exclude the header
+    const totalStudents = lines.length - 1;
     let response = 'This is the list of our students\n';
     response += `Number of students: ${totalStudents}\n`;
 
